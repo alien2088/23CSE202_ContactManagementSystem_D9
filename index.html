@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Management System — D12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Opening the drawer…</div>
+</div>
+  
+<div id="loginView" style="display:none;">
+  <div class="cabinet">
+    <div class="cabinet-plate">
+      <div class="cabinet-eyebrow">23CSE111 · Object Oriented Programming</div>
+      <div class="cabinet-title">Contact <span>Management</span><br>System</div>
+      <div class="cabinet-sub">Group D12 — sign in to open the record drawer</div>
+    </div>
+    <div class="drawer">
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tabSignIn">Sign in</button>
+        <button type="button" class="auth-tab" id="tabSignUp">Sign up</button>
+      </div>
+      
+      <div class="auth-panel active" id="panelSignIn">
+        <div class="login-error" id="loginError">Invalid credentials. Try again.</div>
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="loginUser" placeholder="admin" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="loginPass" placeholder="••••••••" autocomplete="off">
+          </div>
+          <button type="submit" class="login-btn" id="loginSubmitBtn">Log in</button>
+        </form>
+        <div class="login-hint">Default credentials — <b>admin</b> / <b>admin123</b></div>
+      </div>
+
+      
+      <div class="auth-panel" id="panelSignUp">
+        <div class="login-error" id="signupError">Something's not right. Check the fields.</div>
+        <form id="signupForm" novalidate>
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="signupUser" placeholder="e.g. abel.b" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="signupPass" placeholder="Min. 6 characters" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Confirm password</label>
+            <input type="password" id="signupPass2" placeholder="Re-enter password" autocomplete="off">
+          </div>
+          <div class="field">
+            <label>Role</label>
+            <select id="signupRole">
+              <option value="Editor">Editor — can add/edit/delete contacts</option>
+              <option value="Viewer">Viewer — read-only access</option>
+            </select>
+          </div>
+          <button type="submit" class="login-btn" id="signupSubmitBtn">Create account</button>
+        </form>
+        <div class="login-hint">New accounts start as <b>Editor</b> or <b>Viewer</b> — an Administrator can promote you later.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+<div id="appView" style="display:none;">
+  <div class="shell">
+
+    
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark">C</div>
+        <div class="brand-text">
+          <div class="b1">Contacts</div>
+          <div class="b2">D12 · Case Study</div>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Search name, phone, email…">
+      </div>
+
+      <div class="sidebar-label">Categories</div>
+      <ul class="cat-list" id="catList"></ul>
+
+      <div class="sidebar-label">Jump to letter</div>
+      <div class="az-rail" id="azRail"></div>
+
+      <div class="sidebar-label" data-role-gate="admin-nav">Admin</div>
+      <button class="cat-btn" id="manageUsersBtn" data-role-gate="admin-nav" style="margin-bottom:8px;">
+        <span style="display:flex;align-items:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:9px;flex-shrink:0;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          Manage users
+        </span>
+        <span class="cat-count" id="userCountBadge">1</span>
+      </button>
+      <button class="cat-btn" id="activityLogBtn" data-role-gate="admin-nav" style="margin-bottom:16px;">
+        <span style="display:flex;align-items:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:9px;flex-shrink:0;"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+          Activity log
+        </span>
+        <span class="cat-count" id="logCountBadge">0</span>
+      </button>
+
+      <div class="sidebar-foot">
+        <div class="user-chip">
+          <div class="user-avatar" id="currentUserAvatar">A</div>
+          <div>
+            <div class="user-name" id="currentUserName">admin</div>
+            <div class="user-role" id="currentUserRole">Administrator</div>
+          </div>
+        </div>
+        <button class="logout-btn" id="logoutBtn">Log out</button>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    
+    <main class="main">
+      <div class="main-head">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+          <div>
+            <div class="main-title">All contacts</div>
+            <div class="main-sub">Showing <b id="shownCount">0</b> of <span id="totalCount">0</span> records</div>
+          </div>
+        </div>
+        <button class="add-btn" id="addContactBtn" data-role-gate="editor-action">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Add contact
+        </button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total contacts</div></div>
+        <div class="stat"><div class="stat-num" id="statCats">0</div><div class="stat-lbl">Categories</div></div>
+        <div class="stat"><div class="stat-num" id="statCompanies">0</div><div class="stat-lbl">Companies</div></div>
+        <div class="stat"><div class="stat-num" id="statFav">0</div><div class="stat-lbl">Favourites</div></div>
+      </div>
+
+      <div class="toolbar-row">
+        <select class="sort-select" id="sortSelect">
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="recent">Recently added</option>
+          <option value="company">Company</option>
+        </select>
+        <button class="fav-filter-btn" id="favFilterBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Favourites only
+        </button>
+      </div>
+
+      <div class="grid" id="cardGrid"></div>
+    </main>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="detail-panel" id="detailPanel"></div>
+
+<div class="modal" id="formModal">
+  <div class="modal-backdrop" id="formModalBackdrop"></div>
+  <div class="modal-box">
+    <div class="modal-title-row">
+      <div class="modal-title" id="formModalTitle">Add contact</div>
+      <button class="modal-close" id="formModalCloseBtn" type="button">&times;</button>
+    </div>
+    <div class="modal-sub" id="formModalSub">New card will be filed alphabetically</div>
+    <form id="contactForm" novalidate>
+      <input type="hidden" id="f_id">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Full name</label>
+          <input type="text" id="f_name" placeholder="e.g. Alien Lakshmi" required>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" id="f_phone" placeholder="10-digit number" required maxlength="10" inputmode="numeric">
+          <div class="field-error" id="f_phone_err">Enter a valid 10-digit phone number.</div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="f_email" placeholder="name@email.com" required>
+          <div class="field-error" id="f_email_err">Enter a valid email address.</div>
+        </div>
+        <div class="field full">
+          <label>Address</label>
+          <input type="text" id="f_address" placeholder="City, State">
+        </div>
+        <div class="field">
+          <label>Birthday</label>
+          <input type="date" id="f_birthday">
+        </div>
+        <div class="field">
+          <label>Company</label>
+          <input type="text" id="f_company" placeholder="Amrita">
+        </div>
+        <div class="field full">
+          <label>Category</label>
+          <select id="f_category">
+            <option value="Personal">Personal</option>
+            <option value="Business">Business</option>
+            <option value="Family">Family</option>
+            <option value="Academic">Academic</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="formCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="formSubmitBtn">Save contact</button>
+      </div>
+    </form>
+  </div>
+</div>
+  
+<div class="modal" id="confirmModal">
+  <div class="modal-backdrop" id="confirmModalBackdrop"></div>
+  <div class="modal-box" style="max-width:400px;">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>
+    </div>
+    <div class="modal-title" id="confirmTitle" style="margin-bottom:8px;">Delete this contact?</div>
+    <div class="modal-sub" id="confirmSub" style="margin-bottom:22px;">This will permanently remove <b id="confirmName" style="color:var(--card);"></b> from the file. This can't be undone.</div>
+    <div class="form-actions" style="margin-top:0;">
+      <button class="btn btn-ghost" id="confirmCancelBtn" type="button">Cancel</button>
+      <button class="btn" style="background:var(--rust); color:#EAF0FA;" id="confirmOkBtn" type="button">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="usersModal">
+  <div class="modal-backdrop" id="usersModalBackdrop"></div>
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-title-row">
+      <div class="modal-title">Manage users</div>
+      <button class="modal-close" id="usersModalCloseBtn" type="button">&times;</button>
+    </div>
+    <div class="modal-sub">System accounts with access to this drawer</div>
+
+    <div id="userList" style="margin-bottom:20px; display:flex; flex-direction:column; gap:10px;"></div>
+
+    <div style="border-top:1px solid var(--ink-line); padding-top:18px;">
+      <div class="sidebar-label" style="margin:0 0 12px;">Add new user</div>
+      <form id="userForm" novalidate>
+        <div class="form-grid" style="margin-bottom:0;">
+          <div class="field">
+            <label>Username</label>
+            <input type="text" id="u_username" placeholder="e.g. abel.b" required>
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="u_password" placeholder="••••••••" required>
+          </div>
+          <div class="field full">
+            <label>Role</label>
+            <select id="u_role">
+              <option value="Editor">Editor — can add/edit/delete contacts</option>
+              <option value="Viewer">Viewer — read-only access</option>
+              <option value="Administrator">Administrator — full system access</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="usersModalCloseBtn2">Close</button>
+          <button type="submit" class="btn btn-primary">Add user</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  
+<div class="modal" id="logsModal">
+  <div class="modal-backdrop" id="logsModalBackdrop"></div>
+  <div class="modal-box" style="max-width:540px;">
+    <div class="modal-title-row">
+      <div class="modal-title">Activity log</div>
+      <button class="modal-close" id="logsModalCloseBtn" type="button">&times;</button>
+    </div>
+    <div class="modal-sub">Logins, logouts, and contact / user changes — most recent first</div>
+    <div class="log-modal-list" id="logModalList"></div>
+  </div>
+</div>
+
+<div id="toastWrap"></div>
+<script src="app.js"></script>
+</body>
+</html>
