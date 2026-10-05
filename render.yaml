@@ -1,0 +1,24 @@
+# One-click deploy: Render dashboard → New → Blueprint → pick this GitHub repo.
+services:
+  - type: web
+    name: cms-d9-api            # -> https://cms-d9-api.onrender.com  (matches config.js)
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase: { name: cms-d9-db, property: connectionString }
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://alien2088.github.io
+      - key: SERVE_FRONTEND
+        value: "true"
+
+databases:
+  - name: cms-d9-db
+    plan: free
+    databaseName: cms_d9

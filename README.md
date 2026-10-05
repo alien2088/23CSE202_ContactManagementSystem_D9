@@ -4,7 +4,7 @@ REST API for the 23CSE202 Contact Management System. It implements the relationa
 from the Database Design Document: `users`, `contacts`, `groups`, `contact_group` (M:N),
 `communication_log` (weak entity, PK = `contact_id, log_id`) and `activity_log`.
 
-## Quick start
+## Quick start (local development only — see "Deploying from GitHub" below)
 ```bash
 cd backend
 npm install
@@ -46,13 +46,15 @@ All routes are under `/api`; send `Authorization: Bearer <token>` (except login/
 | GET `/stats/summary`, `/stats/frequent`, `/stats/groups` | any | Dashboard cards + the two views |
 | GET/POST `/groups` | read: any, create: Admin | Categories / custom labels |
 
-## Connecting the GitHub Pages frontend
-GitHub Pages can't run Node, so deploy `backend/` (Render, Railway, Fly.io…) with a managed
-PostgreSQL, set `DATABASE_URL`, `JWT_SECRET` and `CORS_ORIGINS=https://alien2088.github.io`,
-then add this line **above** `api.js` in `index.html`:
-```html
-<script>window.CMS_API_BASE = 'https://YOUR-API-HOST/api';</script>
-```
+## Deploying from GitHub (no localhost)
+GitHub Pages can only serve static files, so the site stays on Pages and the API runs on Render, deployed from this same repo:
+1. Push everything to `alien2088/23CSE202_ContactManagementSystem_D9`.
+2. Render dashboard → **New → Blueprint** → select the repo. `render.yaml` creates the API **and** a free PostgreSQL database.
+3. On first start the API creates the tables, trigger, procedure and views and seeds `admin / admin123` automatically.
+4. If your service URL differs from `https://cms-d9-api.onrender.com`, edit `config.js` and push.
+5. Your Pages site (`https://alien2088.github.io/23CSE202_ContactManagementSystem_D9/`) now talks to the hosted API. The Render URL also serves the full app.
+
+Free-tier note: the API sleeps after inactivity, so the first request can take ~30–60 s. Open the site once before a demo.
 
 ## Security notes
 Passwords are hashed with bcrypt (the old `simpleHash` is gone); roles are re-read from the DB on every

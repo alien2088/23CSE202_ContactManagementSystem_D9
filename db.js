@@ -1,8 +1,12 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
+const connectionString = process.env.DATABASE_URL || 'postgres://cms:cms@localhost:5432/cms_d9';
+// Managed hosts (Render, Neon, Supabase…) require TLS; local Postgres doesn't.
+const isLocalDb = /@(localhost|127\.0\.0\.1)/.test(connectionString);
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgres://cms:cms@localhost:5432/cms_d9',
+  connectionString,
+  ssl: process.env.DATABASE_SSL === 'false' || isLocalDb ? false : { rejectUnauthorized: false },
 });
 
 /** Run fn(client) inside a transaction; commits on success, rolls back on error. */
