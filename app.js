@@ -677,7 +677,7 @@ function closeSidebar() {
 document.addEventListener('DOMContentLoaded', () => {
   seedIfEmpty();
   users = loadJSON(STORAGE.users, []);
-  contacts = loadJSON(STORAGE.contacts, []);
+  contacts = [];
   logs = loadJSON(STORAGE.logs, []);
   nextContactId = loadJSON(STORAGE.nextContactId, 1);
 
