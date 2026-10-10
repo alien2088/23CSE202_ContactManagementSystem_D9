@@ -76,6 +76,23 @@ const AVATAR_PALETTE = ["#2B4A75", "#4A6B94", "#6E86A6", "#3A3D46", "#1D3350", "
 
 function persistUsers() { saveJSON(STORAGE.users, users); }
 function persistContacts() { saveJSON(STORAGE.contacts, contacts); }
+
+async function loadContactsFromServer() {
+  try {
+    const response = await fetch(`${API_URL}/contacts`);
+
+    if (!response.ok) {
+      throw new Error("Could not load contacts");
+    }
+
+    contacts = await response.json();
+    renderAll();
+  } catch (error) {
+    console.error("Error loading contacts:", error);
+    showToast("Server error", "Could not load contacts from the database.", true);
+  }
+}
+
 function persistLogs() { saveJSON(STORAGE.logs, logs); }
 
 function nowStamp() {
