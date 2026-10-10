@@ -499,20 +499,52 @@ function saveContact(e) {
     return false;
   }
 
+
   if (id) {
-    const c = contacts.find(x => x.id === Number(id));
-    Object.assign(c, data);
-    persistContacts();
-    addLog(`UPDATE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') edited by '${currentUser.username}'.`);
-    showToast("Contact updated", `${data.name}'s card has been refiled.`, false);
+    try {
+      const response = await fetch(`${API_URL}/contacts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Could not update contact");
+      }
+
+      const c = contacts.find(x => x.id === Number(id));
+      Object.assign(c, data);
+      addLog(`UPDATE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') edited by '${currentUser.username}'.`);
+      showToast("Contact updated", `${data.name}'s card has been refiled.`, false);
+    } catch (error) {
+      showToast("Update failed", error.message, true);
+      return false;
+    }
   } else {
-    const c = { id: nextContactId++, favourite: false, ...data };
-    saveJSON(STORAGE.nextContactId, nextContactId);
-    contacts.push(c);
-    persistContacts();
-    addLog(`ADD — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') created by '${currentUser.username}'.`);
-    showToast("Contact added", `${data.name} was saved to file with ID REC-${String(c.id).padStart(4, '0')}.`, false);
+    try {
+      const response = await fetch(`${API_URL}/contacts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Could not add contact");
+      }
+
+      const c = await response.json();
+      contacts.push(c);
+      nextContactId = Math.max(nextContactId, c.id + 1);
+      addLog(`ADD — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') created by '${currentUser.username}'.`);
+      showToast("Contact added", `${data.name} was saved to the database.`, false);
+    } catch (error) {
+      showToast("Add failed", error.message, true);
+      return false;
+    }
   }
+
 
   closeFormModal();
   document.getElementById('overlay').classList.remove('show');
