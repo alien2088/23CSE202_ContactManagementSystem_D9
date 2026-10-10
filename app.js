@@ -1,3 +1,5 @@
+const API_URL = "https://two3cse202-contactmanagementsystem-d9.onrender.com";
+
 const STORAGE = {
   users: 'cms_users',
   contacts: 'cms_contacts',
