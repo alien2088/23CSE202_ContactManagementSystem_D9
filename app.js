@@ -61,6 +61,7 @@ function seedIfEmpty() {
 
 let users = [];
 let contacts = [];
+
 let logs = [];
 let nextContactId = 1;
 let currentUser = null; 
@@ -697,6 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
   contacts = [];
   logs = loadJSON(STORAGE.logs, []);
   nextContactId = loadJSON(STORAGE.nextContactId, 1);
+  loadContactsFromServer();
 
  
   setTimeout(() => {
