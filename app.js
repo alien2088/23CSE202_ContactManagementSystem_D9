@@ -608,37 +608,39 @@ function closeConfirmModal() {
     document.getElementById('overlay').classList.remove('show');
   }
 }
-function confirmPendingDelete() {
+
+async function confirmPendingDelete() {
   if (!pendingDelete) return;
-  
-if (pendingDelete.type === 'contact') {
+
+  if (pendingDelete.type === 'contact') {
     const c = contacts.find(x => x.id === pendingDelete.id);
     if (!c) return;
 
-    fetch(`${API_URL}/contacts/${c.id}`, {
-      method: "DELETE"
-    })
-      .then(async response => {
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Could not delete contact");
-        }
-
-        contacts = contacts.filter(x => x.id !== pendingDelete.id);
-        addLog(`DELETE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') removed by '${currentUser.username}'.`);
-        closeConfirmModal();
-        document.getElementById('overlay').classList.remove('show');
-        document.getElementById('detailPanel').classList.remove('show');
-        showToast("Contact deleted", `${c.name} was removed from the database.`, true);
-        renderAll();
-      })
-      .catch(error => {
-        showToast("Delete failed", error.message, true);
+    try {
+      const response = await fetch(`${API_URL}/contacts/${c.id}`, {
+        method: "DELETE"
       });
-}
- else if (pendingDelete.type === 'user') {
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Could not delete contact");
+      }
+
+      contacts = contacts.filter(x => x.id !== pendingDelete.id);
+      addLog(`DELETE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') removed by '${currentUser.username}'.`);
+      closeConfirmModal();
+      document.getElementById('overlay').classList.remove('show');
+      document.getElementById('detailPanel').classList.remove('show');
+      showToast("Contact deleted", `${c.name} was removed from the database.`, true);
+      renderAll();
+    } catch (error) {
+      showToast("Delete failed", error.message, true);
+    }
+
+  } else if (pendingDelete.type === 'user') {
     const u = users.find(x => x.id === pendingDelete.id);
     if (!u) return;
+
     users = users.filter(x => x.id !== pendingDelete.id);
     persistUsers();
     addLog(`USER — account '${u.username}' removed by '${currentUser.username}'.`);
@@ -646,8 +648,9 @@ if (pendingDelete.type === 'contact') {
     renderUserList();
     renderUserBadge();
     showToast("User removed", `${u.username}'s access has been revoked.`, true);
-    if (!document.getElementById('formModal').classList.contains('show') && !document.getElementById('detailPanel').classList.contains('show')) {
-      // keep users modal + overlay open since we were managing users
+
+    if (!document.getElementById('formModal').classList.contains('show') &&
+        !document.getElementById('detailPanel').classList.contains('show')) {
       document.getElementById('overlay').classList.add('show');
       document.getElementById('usersModal').classList.add('show');
     }
