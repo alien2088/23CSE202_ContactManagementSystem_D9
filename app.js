@@ -464,7 +464,7 @@ function closeFormModal() {
   }
 }
 
-function saveContact(e) {
+async function saveContact(e) {
   e.preventDefault();
   if (!canEditContacts()) return false;
   clearFieldErrors();
