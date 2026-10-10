@@ -552,15 +552,33 @@ async function saveContact(e) {
   return false;
 }
 
-function toggleFavourite(id) {
+
+async function toggleFavourite(id) {
   const c = contacts.find(x => x.id === id);
   if (!c) return;
-  c.favourite = !c.favourite;
-  persistContacts();
-  addLog(`FAVOURITE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') ${c.favourite ? 'marked' : 'unmarked'} as favourite.`);
-  renderGrid();
-  renderStats();
-  if (document.getElementById('detailPanel').classList.contains('show')) openDetail(id);
+
+  try {
+    const response = await fetch(`${API_URL}/contacts/${id}/favourite`, {
+      method: "PATCH"
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not update favourite");
+    }
+
+    const result = await response.json();
+    c.favourite = result.favourite;
+
+    addLog(`FAVOURITE — record REC-${String(c.id).padStart(4, '0')} ('${c.name}') ${c.favourite ? 'marked' : 'unmarked'} as favourite.`);
+    renderGrid();
+    renderStats();
+
+    if (document.getElementById('detailPanel').classList.contains('show')) {
+      openDetail(id);
+    }
+  } catch (error) {
+    showToast("Favourite failed", error.message, true);
+  }
 }
 
 
