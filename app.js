@@ -635,6 +635,7 @@ if (pendingDelete.type === 'contact') {
       .catch(error => {
         showToast("Delete failed", error.message, true);
       });
+}
  else if (pendingDelete.type === 'user') {
     const u = users.find(x => x.id === pendingDelete.id);
     if (!u) return;
